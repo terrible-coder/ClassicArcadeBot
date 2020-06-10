@@ -54,22 +54,37 @@ function sendMessage(id, text) {
 	fetch(url);
 }
 
-console.log("Getting updates...");
+function answerCallbackQuery(query) {
+	const gameBase = "terrible-coder.github.io";
+	const gameURL = `${gameBase}/${query.game_short_name}`;
+	const url = apiCall("answerCallbackQuery", {
+		callback_query_id: query.id,
+		url: gameURL
+	});
+	fetch(url);
+}
+
+let logged = false;
 setInterval(function() {
-	if(update_id !== -1)
-		console.log(`New id = ${update_id}`);
+	if(!logged) {
+		logged = true;
+		console.log(update_id === -1? "Getting updates...": `New id = ${update_id}`);
+	}
 	getUpdates()
 		.then(updates => updates.result)
 		.then(result => {
 			if(result == undefined || result.length == 0) return;
 			update_id = (result[result.length - 1].update_id) + 1;
+			logged = false;
 			result.forEach(update => {
 				if(update.message) {
 					const message = update.message;
 					const user = message.from.first_name;
 					const text = `Hello ${user}! How are you?`;
 					sendMessage(message.from.id, text);
-				}
+				} else if(update.callback_query)
+					answerCallbackQuery(update.callback_query)
+				else console.log(update);
 			});
 		});
 }, 2000);
