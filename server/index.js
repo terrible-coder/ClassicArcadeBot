@@ -46,21 +46,30 @@ function getUpdates() {
 			.then(response => response.json());
 }
 
+function sendMessage(id, text) {
+	const url = apiCall("sendMessage", {
+		chat_id: id,
+		text: text
+	});
+	fetch(url);
+}
+
 console.log("Getting updates...");
 setInterval(function() {
 	if(update_id !== -1)
 		console.log(`New id = ${update_id}`);
 	getUpdates()
-		.then(updates => {
-			console.log(updates.result);
-			return updates.result;
-		})
+		.then(updates => updates.result)
 		.then(result => {
 			if(result == undefined || result.length == 0) return;
 			update_id = (result[result.length - 1].update_id) + 1;
 			result.forEach(update => {
-				if(update.message)
-					console.log("Got a message.", update);
+				if(update.message) {
+					const message = update.message;
+					const user = message.from.first_name;
+					const text = `Hello ${user}! How are you?`;
+					sendMessage(message.from.id, text);
+				}
 			});
 		});
 }, 2000);
