@@ -33,3 +33,34 @@ fetch(url)
 			process.exit(1);
 		} else console.log(`${json.result.username} online.`);
 	});
+
+let update_id = -1;
+function getUpdates() {
+	let url;
+	if(update_id == -1) url = apiCall("getUpdates", {limit: 10})
+	else url = apiCall("getUpdates", {
+		limit: 10,
+		offset: update_id
+	});
+	return fetch(url)
+			.then(response => response.json());
+}
+
+console.log("Getting updates...");
+setInterval(function() {
+	if(update_id !== -1)
+		console.log(`New id = ${update_id}`);
+	getUpdates()
+		.then(updates => {
+			console.log(updates.result);
+			return updates.result;
+		})
+		.then(result => {
+			if(result == undefined || result.length == 0) return;
+			update_id = (result[result.length - 1].update_id) + 1;
+			result.forEach(update => {
+				if(update.message)
+					console.log("Got a message.", update);
+			});
+		});
+}, 2000);
