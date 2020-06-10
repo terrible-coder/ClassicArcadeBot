@@ -27,4 +27,9 @@ function apiCall(method, options) {
 const url = apiCall("getMe");
 fetch(url)
 	.then(data => data.json())
-	.then(json => console.log(json));
+	.then(json => {
+		if(!json.ok) {
+			console.log("Could not connect to the Telegram Bot API. Terminating...");
+			process.exit(1);
+		} else console.log(`${json.result.username} online.`);
+	});
